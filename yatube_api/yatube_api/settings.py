@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     "api",
     "posts",
     "drf_yasg",
-    "rest_framework_swagger",
     "djoser",
     "django_filters",
 ]
