@@ -9,6 +9,5 @@ PyJWT==2.1.0
 requests==2.26.0
 drf-yasg
 djoser
-django-filter
 black
 isort

@@ -21,7 +21,6 @@ INSTALLED_APPS = [
     "posts",
     "drf_yasg",
     "djoser",
-    "django_filters",
 ]
 
 MIDDLEWARE = [
