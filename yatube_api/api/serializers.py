@@ -38,17 +38,17 @@ class FollowSerializer(serializers.ModelSerializer):
     following = serializers.SlugField()
 
     def create(self, validated_data):
-        user = self.context.get('request').user
+        user = self.context.get("request").user
         following = get_object_or_404(
-            User.objects, username=validated_data['following']
+            User.objects, username=validated_data["following"]
         )
 
         if user == following:
             raise serializers.ValidationError(
-                            "You can't subscribe for yourself"
-)
-        validated_data['user'] = user
-        validated_data['following'] = following
+                "You can't subscribe for yourself"
+            )
+        validated_data["user"] = user
+        validated_data["following"] = following
         obj, created = Follow.objects.get_or_create(**validated_data)
 
         if not created:
