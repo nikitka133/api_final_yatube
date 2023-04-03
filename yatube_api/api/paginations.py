@@ -6,5 +6,4 @@ class PostPagination(PageNumberPagination):
     page_size = 20
 
     def get_paginated_response(self, data):
-        print(self.request.query_params)
         return Response(data)

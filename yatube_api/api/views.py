@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, status, viewsets, mixins, serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
@@ -47,25 +47,28 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (OwnerOrReadOnly,)
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class CreateRetrieveViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                            viewsets.GenericViewSet):
+    pass
+
+
+class FollowCreateRetrieveViewSet(CreateRetrieveViewSet):
     serializer_class = FollowSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ("=following__username",)
 
     def get_queryset(self):
-        if self.action == "list":
-            return self.request.user.follow.all()
-        return Follow.objects.all()
+        return self.request.user.follow.all()
 
-    def create(self, request, *args, **kwargs):
-        following = request.data.get("following")
-        follow = self.request.user.follow.filter(following__username=following)
-        if follow or self.request.user.username == following:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        return super().create(request, *args, **kwargs)
-
-    def perform_create(self, serializer):
-        following = User.objects.get(
-            username=self.request.data.get("following")
-        )
-        serializer.save(user=self.request.user, following=following)
+    # def create(self, request, *args, **kwargs):
+    #     following = request.data.get("following")
+    #     follow = self.request.user.follow.filter(following__username=following)
+    #     if follow or self.request.user.username == following:
+    #         return Response(status=status.HTTP_400_BAD_REQUEST)
+    #     return super().create(request, *args, **kwargs)
+    #
+    # def perform_create(self, serializer):
+    #     following = User.objects.get(
+    #         username=self.request.data.get("following")
+    #     )
+    #     serializer.save(user=self.request.user, following=following)
