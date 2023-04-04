@@ -37,26 +37,29 @@ class FollowSerializer(serializers.ModelSerializer):
     user = serializers.SlugField(read_only=True)
     following = serializers.SlugField()
 
-    def create(self, validated_data):
-        user = self.context.get("request").user
+    def validate(self, attrs):
+        request = self.context.get("request")
+        user = request.user
+        username = request.data.get('following')
+
         following = get_object_or_404(
-            User.objects, username=validated_data["following"]
+            User.objects, username=username
         )
 
         if user == following:
             raise serializers.ValidationError(
                 "You can't subscribe for yourself"
             )
-        validated_data["user"] = user
-        validated_data["following"] = following
-        obj, created = Follow.objects.get_or_create(**validated_data)
 
-        if not created:
+        if user.follow.filter(following__username=username):
             raise serializers.ValidationError(
                 "You have already subscribed to this author"
             )
 
-        return obj
+        attrs["user"] = user
+        attrs['following'] = following
+
+        return attrs
 
     class Meta:
         fields = ("user", "following")
