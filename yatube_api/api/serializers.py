@@ -37,6 +37,20 @@ class FollowSerializer(serializers.ModelSerializer):
     user = serializers.SlugField(read_only=True)
     following = serializers.SlugField()
 
+    def validate_following(self, following):
+        user = self.context.get("request").user
+        if user.username == following:
+            raise serializers.ValidationError(
+                "You can't subscribe for yourself"
+            )
+
+        if user.follow.filter(following__username=following):
+            raise serializers.ValidationError(
+                "You have already subscribed to this author"
+            )
+
+        return following
+
     def validate(self, attrs):
         request = self.context.get("request")
         user = request.user
@@ -45,16 +59,6 @@ class FollowSerializer(serializers.ModelSerializer):
         following = get_object_or_404(
             User.objects, username=username
         )
-
-        if user == following:
-            raise serializers.ValidationError(
-                "You can't subscribe for yourself"
-            )
-
-        if user.follow.filter(following__username=username):
-            raise serializers.ValidationError(
-                "You have already subscribed to this author"
-            )
 
         attrs["user"] = user
         attrs['following'] = following
