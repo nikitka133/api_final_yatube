@@ -55,3 +55,6 @@ class FollowCreateRetrieveViewSet(CreateRetrieveViewSet):
 
     def get_queryset(self):
         return self.request.user.follow.all()
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

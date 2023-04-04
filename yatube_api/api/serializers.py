@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 from rest_framework.relations import SlugRelatedField
 
 from posts.models import Comment, Follow, Group, Post
@@ -35,11 +34,14 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class FollowSerializer(serializers.ModelSerializer):
     user = serializers.SlugField(read_only=True)
-    following = serializers.SlugField()
+    following = serializers.SlugRelatedField(
+        read_only=False, slug_field='username',
+        queryset=User.objects.all()
+    )
 
     def validate_following(self, following):
         user = self.context.get("request").user
-        if user.username == following:
+        if user == following:
             raise serializers.ValidationError(
                 "You can't subscribe for yourself"
             )
@@ -50,20 +52,6 @@ class FollowSerializer(serializers.ModelSerializer):
             )
 
         return following
-
-    def validate(self, attrs):
-        request = self.context.get("request")
-        user = request.user
-        username = request.data.get('following')
-
-        following = get_object_or_404(
-            User.objects, username=username
-        )
-
-        attrs["user"] = user
-        attrs['following'] = following
-
-        return attrs
 
     class Meta:
         fields = ("user", "following")
